@@ -1,6 +1,8 @@
 package com.minimal.ec135.screenLicence
 
+import android.os.Environment
 import android.util.Log
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -22,25 +24,54 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.minimal.ec135.MainViewModel
+import com.minimal.ec135.util.writeLicencePlateItemsToCsv
+import java.io.File
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 @Composable
 fun LicencePlatesScreen() {
     val TAG = "LicencePlatesScreen"
     Log.d(TAG, "Init LicencePlatesScreen")
 
+    val context = LocalContext.current
+
     val viewModel = viewModel<MainViewModel>((LocalContext.current as ComponentActivity))
     val licencePlateRowItems by viewModel.licencePlateRowItems.collectAsState()
     //val licencePlateRowItems = viewModel.licencePlateRowItems
 
     Column {
+        Text(
+            modifier = Modifier
+                .padding(horizontal = 18.dp)
+                .fillMaxWidth(),
+            text = "Saved Licence Plates: ${licencePlateRowItems.size}"
+        )
+
         Row(
-            modifier = Modifier.padding(horizontal = 18.dp).fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
+            modifier = Modifier
+                .padding(horizontal = 18.dp)
+                .fillMaxWidth(),
+            horizontalArrangement = Arrangement.End,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(
-                text = "Saved Licence Plates: ${licencePlateRowItems.size}"
-            )
+            Button(
+                onClick = {
+                    if (licencePlateRowItems.isNotEmpty()) {
+                        val fileDir =
+                            Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+                        val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd-HH-mm-ss")
+                        val currentTime = LocalDateTime.now().format(formatter)
+                        val outputFile = File(fileDir, "ec135-$currentTime.csv")
+                        val resultMsg =
+                            writeLicencePlateItemsToCsv(licencePlateRowItems, outputFile)
+                        Toast.makeText(context, resultMsg, Toast.LENGTH_SHORT).show()
+                    }else{
+                        Toast.makeText(context, "Nothing to save", Toast.LENGTH_SHORT).show()
+                    }
+                }) {
+                Text(text = "Export")
+            }
             Button(onClick = {
                 viewModel.deleteRowItems()
             }) {
@@ -50,7 +81,9 @@ fun LicencePlatesScreen() {
 
         if (licencePlateRowItems.isEmpty()) {
             Box(
-                modifier = Modifier.padding(18.dp).fillMaxSize(),
+                modifier = Modifier
+                    .padding(18.dp)
+                    .fillMaxSize(),
             ) {
                 Text(text = "Licence plates will be automatically saved here.")
             }

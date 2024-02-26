@@ -18,10 +18,10 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.minimal.ec135.MainViewModel
+import com.minimal.ec135.objectDetection.DetectionsProcessor
 import com.minimal.ec135.objectDetection.LicencePlateImageAnalyzer
 import com.minimal.ec135.objectDetection.MyDetection
 import com.minimal.ec135.objectDetection.TfLiteLicencePlateDetector
-import com.minimal.ec135.objectDetection.processDetectionResults
 
 @Composable
 fun CameraPermissionsGrantedContent(navController: NavHostController) {
@@ -33,6 +33,7 @@ fun CameraPermissionsGrantedContent(navController: NavHostController) {
 
     var myDetections by remember { mutableStateOf(emptyList<MyDetection>()) }
     var imageRotation by remember { mutableFloatStateOf(0f) }
+    val detectionsProcessor by remember {mutableStateOf(DetectionsProcessor(context))}
 
     val analyzer = remember {
         LicencePlateImageAnalyzer(
@@ -42,7 +43,7 @@ fun CameraPermissionsGrantedContent(navController: NavHostController) {
                 myDetections = detections
                 imageRotation = rotation
 
-                processDetectionResults(myDetections, viewModel)
+                detectionsProcessor.processDetectionResults(myDetections, viewModel)
             }
         )
     }

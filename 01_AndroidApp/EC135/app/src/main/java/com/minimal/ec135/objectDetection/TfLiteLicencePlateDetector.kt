@@ -4,7 +4,6 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.util.Log
 import com.minimal.ec135.ml.LicenceModelNew
-import com.minimal.ec135.util.round
 import org.tensorflow.lite.support.image.ImageProcessor
 import org.tensorflow.lite.support.image.TensorImage
 import org.tensorflow.lite.support.image.ops.ResizeOp
@@ -26,18 +25,16 @@ class TfLiteLicencePlateDetector(
 
         val outputs = tfLiteModel.process(tensorImage)
         val locations = outputs.locationsAsTensorBuffer.floatArray
-        val classes = outputs.classesAsTensorBuffer.floatArray
         val scores = outputs.scoresAsTensorBuffer.floatArray
-            .map { it.round(2) }
-            .toFloatArray()
+            //.map { it.round(2) }
+            //.toFloatArray()
 
-        return createDetections(bitmap, locations, classes, scores)
+        return createDetections(bitmap, locations, scores)
     }
 
     private fun createDetections(
         bitmap: Bitmap,
         locations: FloatArray,
-        classes: FloatArray,
         scores: FloatArray
     ): List<MyDetection> {
         val h = bitmap.height

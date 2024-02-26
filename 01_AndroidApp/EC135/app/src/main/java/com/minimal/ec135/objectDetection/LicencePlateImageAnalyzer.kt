@@ -13,27 +13,17 @@ class LicencePlateImageAnalyzer(
     private val onResult: (List<MyDetection>, Float) -> Unit,
 ) : ImageAnalysis.Analyzer {
     private val TAG = "LicencePlateImageAnalyzer"
-    private var framesSkipCounter = 0
 
     override fun analyze(image: ImageProxy) {
-        if (shouldProcessFrame(1)) {
-            Log.d(TAG, "Received frame with resolution: ${image.width}x${image.height}")
-            //Log.d(TAG, if (cameraSelector == CameraSelector.DEFAULT_BACK_CAMERA) "is back" else "is front")
-            //Log.d(TAG, rotation.toString())
+        Log.d(TAG, "Received frame with resolution: ${image.width}x${image.height}")
 
-            val rotation = image.imageInfo.rotationDegrees.toFloat()
-            val matrix = calculateRotationMatrix(rotation)
-            val rotatedBitmap = createRotatedBitmap(image, matrix)
+        val rotation = image.imageInfo.rotationDegrees.toFloat()
+        val matrix = calculateRotationMatrix(rotation)
+        val rotatedBitmap = createRotatedBitmap(image, matrix)
 
-            val results = detector.detect(rotatedBitmap)
-            onResult(results, rotation)
-            image.close()
-        }
-        framesSkipCounter++
-    }
-
-    private fun shouldProcessFrame(toSkip: Int): Boolean {
-        return framesSkipCounter % toSkip == 0
+        val results = detector.detect(rotatedBitmap)
+        onResult(results, rotation)
+        image.close()
     }
 
     private fun calculateRotationMatrix(rotation: Float): Matrix = Matrix().apply {

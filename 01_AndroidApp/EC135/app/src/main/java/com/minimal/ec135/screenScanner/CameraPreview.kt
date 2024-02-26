@@ -1,7 +1,6 @@
 package com.minimal.ec135.screenScanner
 
 import android.util.Log
-import androidx.activity.ComponentActivity
 import androidx.camera.view.LifecycleCameraController
 import androidx.camera.view.PreviewView
 import androidx.compose.foundation.Canvas
@@ -15,12 +14,9 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.unit.toSize
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.minimal.ec135.MainViewModel
 import com.minimal.ec135.objectDetection.MyDetection
 import com.minimal.ec135.objectDetection.drawDetection
 import kotlin.math.max
@@ -37,7 +33,6 @@ fun CameraPreview(
     Log.d(TAG, "Init CameraPreview")
 
     var previewSize by remember { mutableStateOf(Size.Zero) }
-    val viewModel = viewModel<MainViewModel>((LocalContext.current as ComponentActivity))
 
     val lifecycleOwner = LocalLifecycleOwner.current
     AndroidView(
@@ -52,20 +47,24 @@ fun CameraPreview(
             previewSize = coordinates.size.toSize()
         }
     )
-
-    detections.forEach { detection ->
+    if (detections.isNotEmpty()) {
         val scalingFactor =
-            previewSize.height / max(detection.fullBitmap.height, detection.fullBitmap.width)
-        Canvas(
-            modifier = modifier
-        ) {
-            drawIntoCanvas { canvas ->
-                drawDetection(
-                    canvas.nativeCanvas,
-                    detection,
-                    rotation,
-                    scalingFactor
-                )
+            previewSize.height / max(
+                detections.first().fullBitmap.height,
+                detections.first().fullBitmap.width
+            )
+        detections.forEach { detection ->
+            Canvas(
+                modifier = modifier
+            ) {
+                drawIntoCanvas { canvas ->
+                    drawDetection(
+                        canvas.nativeCanvas,
+                        detection,
+                        rotation,
+                        scalingFactor
+                    )
+                }
             }
         }
     }
